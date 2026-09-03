@@ -88,10 +88,11 @@ simple = { limit = 10, period = 60 }
 # 🏠 Durable Objects - Merchant Session
 # ========================================================
 [[durable_objects.bindings]]
-name = "MERCHANT_SESSION"
+name = "MERCHANT_SESSION" # مطابق للربط الموضح بالسجلات لديك
 class_name = "MerchantSession"
 
+# التعديل المطلوب لحل خطأ الـ Deploy ونقله للخطة المجانية ⚡
 [[migrations]]
-tag = "v1_merchant_session"
-new_classes = ["MerchantSession"]
+tag = "v1"
+new_sqlite_classes = ["MerchantSession"]
 
