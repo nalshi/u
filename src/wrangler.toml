@@ -1,0 +1,97 @@
+name = "api"
+main = "src/index.js"
+compatibility_date = "2026-07-21"
+
+# ========================================================
+# 🗄️ قاعدة البيانات D1
+# استبدل database_name و database_id بقيم مشروعك الفعلية
+# (تلقاها من: wrangler d1 list)
+# ========================================================
+[[d1_databases]]
+binding = "DB"
+# ⚠️ لسا لازم تحطها إنت: نفّذ أولاً
+#   wrangler d1 create merchant-db
+# وانسخ الاسم والـ id من نتيجة الأمر (أو من `wrangler d1 list`) هنا:
+database_name = "nalsh-db"
+database_id = "65f387d5-1a16-4811-bc14-1b95e91bd88b"
+
+# ========================================================
+# ⚙️ متغيرات عامة (غير حساسة) - يجوز وضعها هنا مباشرة
+# ========================================================
+[vars]
+GITHUB_OWNER = "nalshi"
+GITHUB_REPO = "Nynnl"
+
+# 🔒 أمان: قائمة الدومينات المسموحة بالوصول (CORS). لو تركتها فاضية،
+# يرجع السلوك القديم (*) بدون قيود.
+# ⚠️ عدّل الدومين تحت ليكون دومين لوحة التاجر الفعلي عندك
+ALLOWED_ORIGINS = "https://appi.dpdns.org"
+
+# إعدادات Firebase العامة (Client Config) -  للنشر لأنها ليست أسرار
+FCM_API_KEY = "AIzaSyCMXZAyWU6z8BfUbvG74LfVWaB36zs75E4"
+FCM_AUTH_DOMAIN = "shiban-a2757.firebaseapp.com"
+FCM_PROJECT_ID = "shiban-a2757"
+FCM_SENDER_ID = "45283310547"
+FCM_APP_ID = "1:45283310547:web:8470fdc9e635e74bd30d26"
+FCM_VAPID_KEY = "BMLWrq3yDRYQvrwJybVidHXUNP6AcE6O5RNmSR9kSl-wfpfbtKwr6a6vXG2HfFye10xXRPT08iDjrtPbDGemD-c"
+
+FIREBASE_DB_URL = "https://shiban-a2757-default-rtdb.europe-west1.firebasedatabase.app/"
+
+# رابط الـ api.php القديم على Render (لمزامنة إعدادات التاجر مع النظام الموروث)
+# ⚠️ حط هنا رابط سيرفس Render الفعلي (مثال: https://your-service.onrender.com/api.php)
+API_PHP_URL = "https://api.nalsh.dpdns.org/api.php"
+
+# إعدادات Cloudflare Cache Purge (غير حساسة - Zone ID ورابط واجهة المتجر)
+# ⚠️ التوكن CLOUDFLARE_API_TOKEN لا يُوضع هنا إطلاقاً، شوف قسم الأسرار تحت
+CLOUDFLARE_ZONE_ID = "a9207e110f97f2e57b27643390bc4099"
+STOREFRONT_BASE_URL = "https://nalsh.dpdns.org"
+VERCEL_PROJECT_ID = "prj_pSmjRLRTR1W0PJYgu2Y4snjhhGVm"
+# ========================================================
+# 🔐 أسرار حقيقية - لا تضعها هنا إطلاقاً كنص صريح!
+# اضبطها عبر أوامر wrangler secret (تُشفَّر ولا تظهر بالكود):
+#
+#   wrangler secret put APP_SECRET_KEY
+#   wrangler secret put GITHUB_TOKEN
+#   wrangler secret put FIREBASE_CREDENTIALS_JSON
+#   wrangler secret put FIREBASE_DB_SECRET
+#   wrangler secret put INTERNAL_SYNC_KEY     ⚠️ ناقص تماماً - لازم تولّده الآن
+#                                              وتحطه بنفس القيمة في Render أيضاً
+#   wrangler secret put CLOUDFLARE_API_TOKEN  ⚠️ تأكد إنه موجود فعلاً
+#                                              (wrangler secret list) - توكن
+#                                              بصلاحية Zone → Cache Purge فقط
+#
+# لو كانت هذي القيم موجودة سابقاً بملف wrangler.toml القديم كـ [vars]
+# عادي، انقلها لأوامر secret put بدل ما تبقى نص صريح بالملف —
+# هذا جزء من تقوية الأمان المطلوبة.
+# ========================================================
+
+# ========================================================
+# 🤖 Workers AI - نموذج المساعد الذكي الخاص بكل تاجر (Llama 3)
+# ========================================================
+[ai]
+binding = "AI"
+
+# ========================================================
+# 🚦 Rate Limiting Binding - يحمي مسار /ai_chat من الإغراق
+# ⚠️ namespace_id هنا رقم توضيحي فقط - إن كانت الميزة مدعومة بحسابك
+# غيّره لقيمة فريدة (أي رقم لم تستخدمه من قبل بهذا الحساب) أو احذف
+# هذه الكتلة بالكامل: الكود سيسقط تلقائياً لعدّاد احتياطي عبر D1
+# (rateLimiter.js) فلن ينكسر شيء إن تركتها أو حذفتها.
+# ========================================================
+[[unsafe.bindings]]
+name = "AI_CHAT_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1101"
+simple = { limit = 10, period = 60 }
+
+# ========================================================
+# 🏠 Durable Objects - Merchant Session
+# ========================================================
+[[durable_objects.bindings]]
+name = "MERCHANT_SESSION"
+class_name = "MerchantSession"
+
+[[migrations]]
+tag = "v1_merchant_session"
+new_classes = ["MerchantSession"]
+
